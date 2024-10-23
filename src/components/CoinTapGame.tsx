@@ -20,6 +20,7 @@ const GameContainer = styled.div`
   height: 100vh;
   background-color: #1a1a1a;
   color: white;
+  position: relative; /* To position bubbles */
 `;
 
 const CoinImage = styled(motion.img)<{ isTapped: boolean }>`
@@ -40,32 +41,42 @@ const TransactionButton = styled(motion.div)`
 
 const Bubble = styled(motion.div)`
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   color: #ffd700;
   font-size: 24px;
   font-weight: bold;
+  pointer-events: none; /* Prevent bubble from receiving pointer events */
 `;
+
+interface BubbleData {
+  id: number;
+  y: number;
+}
 
 const CoinTapGame: React.FC = () => {
   const [tapCount, setTapCount] = useState<number>(0);
   const [transactions, setTransactions] = useState<number>(0);
-  const [showBubble, setShowBubble] = useState<boolean>(false);
+  const [bubbles, setBubbles] = useState<BubbleData[]>([]);
 
   const handleTap = () => {
     const newTapCount = tapCount + 1;
     setTapCount(newTapCount);
 
+    // Show bubbles even when tapped fast
+    const newBubble: BubbleData = {
+      id: Date.now(),
+      y: Math.random() * 100 - 50 // Randomize vertical position slightly
+    };
+    setBubbles((prevBubbles) => [...prevBubbles, newBubble]);
+
     if (newTapCount >= 10) {
       setTransactions(transactions + 1);
       setTapCount(0);
-
-      setShowBubble(true);
-      setTimeout(() => {
-        setShowBubble(false);
-      }, 1000);
     }
+
+    // Remove bubble after animation ends (2 seconds)
+    setTimeout(() => {
+      setBubbles((prevBubbles) => prevBubbles.filter((bubble) => bubble.id !== newBubble.id));
+    }, 2000); // Duration of the animation
   };
 
   return (
@@ -82,15 +93,22 @@ const CoinTapGame: React.FC = () => {
         whileTap={{ scale: 0.9 }}
       />
 
-      {showBubble && (
+      {/* Render multiple animated bubbles */}
+      {bubbles.map((bubble) => (
         <Bubble
+          key={bubble.id}
           initial={{ opacity: 0, y: 0 }}
-          animate={{ opacity: 1, y: -50 }}
+          animate={{ opacity: 1, y: bubble.y - 50 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          style={{
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
         >
           +1
         </Bubble>
-      )}
+      ))}
     </GameContainer>
   );
 };
