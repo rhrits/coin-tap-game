@@ -1,10 +1,10 @@
 import React from 'react';
-import CoinTapGame from './components/CoinTapGame';
- // Adjust the path if needed
+import CoinTapGame from './components/CoinTapGame'; // Adjust the path if needed
 
 const App: React.FC = () => {
   return (
-    <div>
+    <div style={{ textAlign: 'center', padding: '20px' }}>
+      <h1 style={{ color: 'white' }}>Play This Game</h1>
       <CoinTapGame />
     </div>
   );
