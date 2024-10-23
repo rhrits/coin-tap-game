@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { motion } from "framer-motion";
 
-// Vibrate animation
+// Vibrate animation (will only play while tap count is less than 10)
 const vibrate = keyframes`
   0%, 100% { transform: rotate(0deg); }
   20% { transform: rotate(10deg); }
@@ -61,22 +61,25 @@ const CoinTapGame: React.FC = () => {
     const newTapCount = tapCount + 1;
     setTapCount(newTapCount);
 
-    // Show bubbles even when tapped fast
-    const newBubble: BubbleData = {
-      id: Date.now(),
-      y: Math.random() * 100 - 50 // Randomize vertical position slightly
-    };
-    setBubbles((prevBubbles) => [...prevBubbles, newBubble]);
-
+    // Vibrate the coin as long as the tap count is less than 10
     if (newTapCount >= 10) {
       setTransactions(transactions + 1);
       setTapCount(0);
-    }
 
-    // Remove bubble after animation ends (2 seconds)
-    setTimeout(() => {
-      setBubbles((prevBubbles) => prevBubbles.filter((bubble) => bubble.id !== newBubble.id));
-    }, 2000); // Duration of the animation
+      // Show +1 bubble only when transaction is done (after 10 taps)
+      const newBubble: BubbleData = {
+        id: Date.now(),
+        y: Math.random() * 100 - 50, // Randomize vertical position slightly
+      };
+      setBubbles((prevBubbles) => [...prevBubbles, newBubble]);
+
+      // Remove bubble after animation ends (2 seconds)
+      setTimeout(() => {
+        setBubbles((prevBubbles) =>
+          prevBubbles.filter((bubble) => bubble.id !== newBubble.id)
+        );
+      }, 2000); // Duration of the animation
+    }
   };
 
   return (
@@ -85,15 +88,16 @@ const CoinTapGame: React.FC = () => {
         Transactions: {transactions}
       </TransactionButton>
 
+      {/* Coin with vibrate effect when tapped */}
       <CoinImage
         src="/coin.png" // Ensure the path is correct
         alt="Coin"
         onClick={handleTap}
-        isTapped={tapCount > 0}
+        isTapped={tapCount < 10} // Vibrate until tap count reaches 10
         whileTap={{ scale: 0.9 }}
       />
 
-      {/* Render multiple animated bubbles */}
+      {/* Render animated +1 bubbles */}
       {bubbles.map((bubble) => (
         <Bubble
           key={bubble.id}
