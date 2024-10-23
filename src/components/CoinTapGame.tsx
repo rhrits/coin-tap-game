@@ -11,7 +11,7 @@ const vibrate = keyframes`
   80% { transform: rotate(-10deg); }
 `;
 
-// Styles for dark theme, coin, and transaction counter
+// Styles
 const GameContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -22,7 +22,7 @@ const GameContainer = styled.div`
   color: white;
 `;
 
-const CoinImage = styled(motion.img)`
+const CoinImage = styled(motion.img)<{ isTapped: boolean }>`
   width: 150px;
   height: 150px;
   animation: ${(props) => (props.isTapped ? vibrate : "none")} 0.2s ease-in-out;
@@ -48,21 +48,19 @@ const Bubble = styled(motion.div)`
   font-weight: bold;
 `;
 
-export default function CoinTapGame() {
-  const [tapCount, setTapCount] = useState(0);
-  const [transactions, setTransactions] = useState(0);
-  const [showBubble, setShowBubble] = useState(false);
+const CoinTapGame: React.FC = () => {
+  const [tapCount, setTapCount] = useState<number>(0);
+  const [transactions, setTransactions] = useState<number>(0);
+  const [showBubble, setShowBubble] = useState<boolean>(false);
 
   const handleTap = () => {
     const newTapCount = tapCount + 1;
     setTapCount(newTapCount);
 
-    // Show animation bubble after 10 taps
     if (newTapCount >= 10) {
       setTransactions(transactions + 1);
-      setTapCount(0); // Reset tap count
+      setTapCount(0);
 
-      // Show bubble animation
       setShowBubble(true);
       setTimeout(() => {
         setShowBubble(false);
@@ -77,7 +75,7 @@ export default function CoinTapGame() {
       </TransactionButton>
 
       <CoinImage
-        src="/coin.png" // replace with your coin image
+        src="/coin.png" // Ensure the path is correct
         alt="Coin"
         onClick={handleTap}
         isTapped={tapCount > 0}
@@ -95,4 +93,6 @@ export default function CoinTapGame() {
       )}
     </GameContainer>
   );
-}
+};
+
+export default CoinTapGame;
