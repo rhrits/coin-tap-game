@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { motion } from "framer-motion";
 
-// Vibrate animation (will only play while tap count is less than 10)
+// Vibrate animation for the coin
 const vibrate = keyframes`
   0%, 100% { transform: rotate(0deg); }
   20% { transform: rotate(10deg); }
@@ -20,7 +20,7 @@ const GameContainer = styled.div`
   height: 100vh;
   background-color: #1a1a1a;
   color: white;
-  position: relative; /* To position bubbles */
+  position: relative;
 `;
 
 const CoinImage = styled(motion.img)<{ isTapped: boolean }>`
@@ -44,13 +44,22 @@ const Bubble = styled(motion.div)`
   color: #ffd700;
   font-size: 24px;
   font-weight: bold;
-  pointer-events: none; /* Prevent bubble from receiving pointer events */
+  pointer-events: none;
 `;
 
 interface BubbleData {
   id: number;
-  y: number;
+  direction: string; // Different directions for the bubbles
 }
+
+const directions = [
+  { x: 0, y: -100 },  // Up
+  { x: 100, y: -50 }, // Up-right
+  { x: 100, y: 50 },  // Down-right
+  { x: 0, y: 100 },   // Down
+  { x: -100, y: 50 }, // Down-left
+  { x: -100, y: -50 } // Up-left
+];
 
 const CoinTapGame: React.FC = () => {
   const [tapCount, setTapCount] = useState<number>(0);
@@ -61,24 +70,24 @@ const CoinTapGame: React.FC = () => {
     const newTapCount = tapCount + 1;
     setTapCount(newTapCount);
 
-    // Vibrate the coin as long as the tap count is less than 10
     if (newTapCount >= 10) {
       setTransactions(transactions + 1);
       setTapCount(0);
 
-      // Show +1 bubble only when transaction is done (after 10 taps)
-      const newBubble: BubbleData = {
-        id: Date.now(),
-        y: Math.random() * 100 - 50, // Randomize vertical position slightly
-      };
-      setBubbles((prevBubbles) => [...prevBubbles, newBubble]);
+      // Show 6 +1 bubbles coming from different directions
+      const newBubbles = directions.map((_, index) => ({
+        id: Date.now() + index,
+        direction: index.toString(),
+      }));
 
-      // Remove bubble after animation ends (2 seconds)
+      setBubbles((prevBubbles) => [...prevBubbles, ...newBubbles]);
+
+      // Remove bubbles after animation ends (2 seconds)
       setTimeout(() => {
         setBubbles((prevBubbles) =>
-          prevBubbles.filter((bubble) => bubble.id !== newBubble.id)
+          prevBubbles.filter((bubble) => !newBubbles.includes(bubble))
         );
-      }, 2000); // Duration of the animation
+      }, 2000);
     }
   };
 
@@ -88,25 +97,25 @@ const CoinTapGame: React.FC = () => {
         Transactions: {transactions}
       </TransactionButton>
 
-      {/* Coin with vibrate effect when tapped */}
       <CoinImage
-        src="/coin.png" // Ensure the path is correct
+        src="/coin.png"
         alt="Coin"
         onClick={handleTap}
-        isTapped={tapCount < 10} // Vibrate until tap count reaches 10
+        isTapped={tapCount < 10}
         whileTap={{ scale: 0.9 }}
       />
 
-      {/* Render animated +1 bubbles */}
-      {bubbles.map((bubble) => (
+      {/* Render 6 animated +1 bubbles */}
+      {bubbles.map((bubble, index) => (
         <Bubble
           key={bubble.id}
-          initial={{ opacity: 0, y: 0 }}
-          animate={{ opacity: 1, y: bubble.y - 50 }}
+          initial={{ opacity: 0, x: 0, y: 0 }}
+          animate={{ opacity: 1, x: directions[index].x, y: directions[index].y }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
           style={{
             left: "50%",
+            top: "50%",
             transform: "translate(-50%, -50%)",
           }}
         >
